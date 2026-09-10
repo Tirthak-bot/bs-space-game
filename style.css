@@ -1,470 +1,289 @@
 /* =====================================================================
-   STELLAR SIEGE — stylesheet
-   Dark space theme, neon glow accents, responsive HUD + touch controls.
+   STELLAR SIEGE — stylesheet (Black & Blue Theme + Retro Gamepad)
    ===================================================================== */
-
 :root {
-  --neon-cyan:    #4deeff;
-  --neon-magenta: #ff3df0;
-  --neon-purple:  #9b5cff;
-  --neon-green:   #39ff88;
-  --neon-gold:    #ffd23d;
-  --neon-red:     #ff3b5c;
-  --bg-void:      #05040c;
-  --bg-panel:     rgba(12, 10, 28, 0.82);
-  --border-glow:  rgba(77, 238, 255, 0.35);
-  --text-dim:     #8b8ba8;
+  --neon-cyan:    #00e5ff;
+  --neon-blue:    #0055ff;
+  --neon-dark:    #002288;
+  --neon-green:   #00ffaa;
+  --neon-gold:    #ffcc00;
+  --neon-red:     #ff2a4b;
+  
+  --bg-void:      #02040a;
+  --bg-panel:     rgba(4, 10, 24, 0.85);
+  --border-glow:  rgba(0, 229, 255, 0.35);
+  --text-dim:     #6b82a8;
 }
 
 * { margin: 0; padding: 0; box-sizing: border-box; }
 
 html, body {
-  width: 100%;
-  height: 100%;
-  background: var(--bg-void);
-  overflow: hidden;
+  width: 100%; height: 100%;
+  background: var(--bg-void); overflow: hidden;
   font-family: 'Trebuchet MS', 'Segoe UI', Arial, sans-serif;
-  -webkit-tap-highlight-color: transparent;
-  user-select: none;
+  -webkit-tap-highlight-color: transparent; user-select: none;
+  touch-action: none; /* Prevent zooming/scrolling on mobile */
 }
 
-/* ---------------------------------------------------------------------
-   Game container — centers a fixed-aspect play area, scales to viewport
-   --------------------------------------------------------------------- */
 #game-container {
-  position: relative;
-  width: 100vw;
-  height: 100vh;
   display: flex;
-  align-items: center;
-  justify-content: center;
+  flex-direction: column;
+  width: 100vw; height: 100vh;
   background:
-    radial-gradient(ellipse at 50% 0%, rgba(77,238,255,0.06), transparent 60%),
-    radial-gradient(ellipse at 50% 100%, rgba(155,92,255,0.08), transparent 60%),
+    radial-gradient(ellipse at 50% 0%, rgba(0,229,255,0.08), transparent 60%),
+    radial-gradient(ellipse at 50% 100%, rgba(0,85,255,0.08), transparent 60%),
     var(--bg-void);
 }
 
-#game-canvas {
-  display: block;
+#game-view {
+  position: relative;
+  flex: 1; /* Takes up all available space above the gamepad */
   width: 100%;
-  height: 100%;
-  background: transparent;
-  cursor: crosshair;
+  overflow: hidden;
 }
 
+#game-canvas {
+  display: block; width: 100%; height: 100%;
+  background: transparent; cursor: crosshair;
+}
 .hidden { display: none !important; }
+
+/* EMP Bomb Flash Effect */
+#screen-flash {
+  position: absolute; inset: 0; background: #fff; z-index: 5;
+  opacity: 0; pointer-events: none; transition: opacity 0.1s;
+}
 
 /* =====================================================================
    HUD
    ===================================================================== */
 #hud {
-  position: absolute;
-  top: 0; left: 0; right: 0;
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  padding: 14px 18px;
-  pointer-events: none;
-  z-index: 10;
-  gap: 10px;
+  position: absolute; top: 0; left: 0; right: 0; z-index: 10;
+  display: flex; justify-content: space-between; align-items: flex-start;
+  padding: 14px 18px; pointer-events: none; gap: 10px;
 }
-
 .hud-left, .hud-right {
-  background: var(--bg-panel);
-  border: 1px solid var(--border-glow);
-  border-radius: 10px;
-  padding: 8px 14px;
-  backdrop-filter: blur(4px);
-  box-shadow: 0 0 18px rgba(77, 238, 255, 0.12);
+  background: var(--bg-panel); border: 1px solid var(--border-glow);
+  border-radius: 8px; padding: 8px 14px; backdrop-filter: blur(6px);
+  box-shadow: 0 0 18px rgba(0, 229, 255, 0.12);
 }
-
 .hud-title {
-  font-family: 'Orbitron', 'Trebuchet MS', sans-serif;
-  font-weight: 700;
-  font-size: 13px;
-  letter-spacing: 3px;
-  color: var(--neon-cyan);
-  text-shadow: 0 0 8px var(--neon-cyan);
-  margin-bottom: 6px;
+  font-family: 'Orbitron', sans-serif; font-weight: 700; font-size: 13px;
+  letter-spacing: 3px; color: var(--neon-cyan);
+  text-shadow: 0 0 8px var(--neon-cyan); margin-bottom: 6px;
 }
-
 .hud-row { display: flex; gap: 8px; align-items: baseline; }
 .hud-right .hud-row { justify-content: flex-end; margin-bottom: 2px; }
+.hud-label { font-size: 11px; letter-spacing: 2px; color: var(--text-dim); }
+.hud-value { font-size: 18px; font-weight: bold; color: #fff; text-shadow: 0 0 6px var(--neon-cyan); min-width: 20px; }
 
-.hud-label {
-  font-size: 11px;
-  letter-spacing: 2px;
-  color: var(--text-dim);
-}
-
-.hud-value {
-  font-size: 18px;
-  font-weight: bold;
-  color: #fff;
-  text-shadow: 0 0 6px var(--neon-cyan);
-  min-width: 20px;
-}
-
-.hud-center {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 6px;
-  flex: 1;
-  max-width: 340px;
-}
-
+.hud-center { display: flex; flex-direction: column; align-items: center; gap: 6px; flex: 1; max-width: 340px; }
 #health-bar-outer {
-  position: relative;
-  width: 100%;
-  height: 22px;
-  background: rgba(0,0,0,0.5);
-  border: 1px solid var(--border-glow);
-  border-radius: 11px;
-  overflow: hidden;
-  box-shadow: 0 0 14px rgba(77,238,255,0.15);
+  position: relative; width: 100%; height: 22px;
+  background: rgba(0,0,0,0.6); border: 1px solid var(--border-glow);
+  border-radius: 11px; overflow: hidden; box-shadow: 0 0 14px rgba(0,229,255,0.15);
 }
-
 #health-bar-inner {
-  height: 100%;
-  width: 100%;
-  background: linear-gradient(90deg, var(--neon-green), #a4ff4d);
-  box-shadow: 0 0 12px var(--neon-green);
-  transition: width 0.25s ease, background 0.25s ease;
+  height: 100%; width: 100%; background: linear-gradient(90deg, var(--neon-green), #00e5ff);
+  box-shadow: 0 0 12px var(--neon-cyan); transition: width 0.25s ease, background 0.25s ease;
 }
-
 #health-text {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 12px;
-  font-weight: bold;
-  color: #fff;
-  text-shadow: 0 1px 3px #000;
+  position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+  font-size: 12px; font-weight: bold; color: #fff; text-shadow: 0 1px 3px #000;
 }
-
-#active-powerups {
-  display: flex;
-  gap: 6px;
-  min-height: 22px;
+.resource-row { display: flex; gap: 14px; align-items: center; width: 100%; justify-content: center; }
+.bomb-tracker {
+  display: flex; gap: 6px; align-items: baseline; background: rgba(0,0,0,0.4);
+  padding: 2px 10px; border-radius: 12px; border: 1px solid var(--neon-blue);
+  box-shadow: 0 0 8px rgba(0,85,255,0.3);
 }
-
+#bomb-count { color: var(--neon-cyan); font-weight: bold; font-size: 14px; text-shadow: 0 0 6px var(--neon-cyan); }
+#active-powerups { display: flex; gap: 6px; min-height: 22px; }
 .powerup-chip {
-  font-size: 10px;
-  letter-spacing: 1px;
-  padding: 3px 8px;
-  border-radius: 20px;
-  border: 1px solid currentColor;
-  background: rgba(0,0,0,0.4);
+  font-size: 10px; letter-spacing: 1px; padding: 3px 8px; border-radius: 20px;
+  border: 1px solid currentColor; background: rgba(0,0,0,0.4);
   animation: chip-pulse 1s ease-in-out infinite;
 }
 
-@keyframes chip-pulse {
-  0%, 100% { opacity: 0.75; }
-  50% { opacity: 1; }
-}
+@keyframes chip-pulse { 0%, 100% { opacity: 0.75; } 50% { opacity: 1; } }
 
-/* =====================================================================
-   Combo streak display
-   ===================================================================== */
+/* Dynamic Toasts & Boss UI */
 #combo-display {
-  position: absolute;
-  top: 62px;
-  left: 50%;
-  transform: translateX(-50%);
-  z-index: 10;
-  font-family: 'Orbitron', 'Trebuchet MS', sans-serif;
-  font-size: 15px;
-  font-weight: 700;
-  letter-spacing: 2px;
-  color: var(--neon-gold);
-  text-shadow: 0 0 10px rgba(255,210,61,0.7);
-  pointer-events: none;
-  animation: chip-pulse 0.6s ease-in-out infinite;
+  position: absolute; top: 70px; left: 50%; transform: translateX(-50%); z-index: 10;
+  font-family: 'Orbitron', sans-serif; font-size: 15px; font-weight: 700; letter-spacing: 2px;
+  color: var(--neon-cyan); text-shadow: 0 0 10px rgba(0,229,255,0.7);
+  pointer-events: none; animation: chip-pulse 0.6s ease-in-out infinite;
 }
-
-/* =====================================================================
-   Level-up toast
-   ===================================================================== */
 #level-toast {
-  position: absolute;
-  top: 40%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  z-index: 15;
-  font-family: 'Orbitron', 'Trebuchet MS', sans-serif;
-  font-size: clamp(28px, 6vw, 46px);
-  font-weight: 900;
-  letter-spacing: 4px;
-  color: #fff;
-  text-shadow: 0 0 12px var(--neon-purple), 0 0 34px var(--neon-purple);
-  pointer-events: none;
-  animation: toast-pop 1.6s ease-out forwards;
+  position: absolute; top: 35%; left: 50%; transform: translate(-50%, -50%); z-index: 15;
+  font-family: 'Orbitron', sans-serif; font-size: clamp(28px, 6vw, 46px); font-weight: 900; letter-spacing: 4px;
+  color: #fff; text-shadow: 0 0 12px var(--neon-blue), 0 0 34px var(--neon-cyan);
+  pointer-events: none; animation: toast-pop 1.8s ease-out forwards;
 }
 @keyframes toast-pop {
-  0%   { opacity: 0; transform: translate(-50%, -40%) scale(0.85); }
-  15%  { opacity: 1; transform: translate(-50%, -50%) scale(1); }
-  75%  { opacity: 1; }
-  100% { opacity: 0; transform: translate(-50%, -55%) scale(1.05); }
+  0% { opacity: 0; transform: translate(-50%, -40%) scale(0.85); }
+  15% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+  75% { opacity: 1; }
+  100% { opacity: 0; transform: translate(-50%, -60%) scale(1.1); }
 }
 
-/* =====================================================================
-   Pause button
-   ===================================================================== */
+#boss-ui {
+  position: absolute; top: 60px; left: 50%; transform: translateX(-50%);
+  width: 60%; max-width: 500px; z-index: 12; text-align: center; pointer-events: none;
+}
+.boss-name { color: var(--neon-red); font-family: 'Orbitron', sans-serif; letter-spacing: 4px; font-weight: bold; text-shadow: 0 0 10px var(--neon-red); margin-bottom: 6px; }
+.boss-bar-outer { width: 100%; height: 16px; background: rgba(0,0,0,0.7); border: 2px solid var(--neon-red); border-radius: 8px; overflow: hidden; box-shadow: 0 0 20px rgba(255,42,75,0.4); }
+#boss-bar-inner { height: 100%; background: var(--neon-red); width: 100%; transition: width 0.1s linear; }
+
+/* Buttons & Menus */
 .icon-btn {
-  position: absolute;
-  top: 16px;
-  right: 16px;
-  z-index: 11;
-  width: 38px;
-  height: 38px;
-  border-radius: 50%;
-  border: 1px solid var(--border-glow);
-  background: var(--bg-panel);
-  color: var(--neon-cyan);
-  font-size: 14px;
-  cursor: pointer;
-  box-shadow: 0 0 14px rgba(77,238,255,0.2);
-  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  position: absolute; top: 16px; right: 16px; z-index: 30; width: 38px; height: 38px;
+  border-radius: 50%; border: 1px solid var(--border-glow); background: var(--bg-panel);
+  color: var(--neon-cyan); font-size: 14px; cursor: pointer; box-shadow: 0 0 14px rgba(0,229,255,0.2);
+  transition: transform 0.15s, box-shadow 0.15s; pointer-events: auto;
 }
-.icon-btn:hover { transform: scale(1.08); box-shadow: 0 0 22px rgba(77,238,255,0.4); }
+.icon-btn:hover { transform: scale(1.08); box-shadow: 0 0 22px rgba(0,229,255,0.4); }
 .icon-btn:active { transform: scale(0.93); }
-
 #mute-btn { right: 62px; }
-#mute-btn.muted { color: var(--neon-red); border-color: rgba(255,59,92,0.5); }
+#mute-btn.muted { color: var(--text-dim); border-color: var(--text-dim); }
 
-/* re-position pause/mute buttons below hud on very narrow screens */
-@media (max-width: 480px) {
-  .icon-btn { top: 10px; right: 10px; width: 32px; height: 32px; font-size: 11px; }
-  #mute-btn { right: 50px; }
-}
-
-/* =====================================================================
-   Overlay screens (start / pause / game over)
-   ===================================================================== */
 .overlay-screen {
-  position: absolute;
-  inset: 0;
-  z-index: 20;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 16px;
-  text-align: center;
-  background: radial-gradient(ellipse at 50% 40%, rgba(20,14,46,0.92), rgba(4,3,10,0.97));
-  backdrop-filter: blur(2px);
-  animation: fade-in 0.35s ease;
-  padding: 20px;
+  position: absolute; inset: 0; z-index: 40; display: flex; flex-direction: column;
+  align-items: center; justify-content: center; gap: 16px; text-align: center;
+  background: radial-gradient(ellipse at 50% 40%, rgba(2,6,17,0.92), rgba(0,2,5,0.97));
+  backdrop-filter: blur(4px); animation: fade-in 0.4s ease; padding: 20px;
 }
-
-@keyframes fade-in {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
+@keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
 
 .game-logo {
-  font-family: 'Orbitron', 'Trebuchet MS', sans-serif;
-  font-size: clamp(38px, 9vw, 72px);
-  font-weight: 900;
-  letter-spacing: 4px;
-  color: #fff;
-  text-shadow:
-    0 0 10px var(--neon-cyan),
-    0 0 30px var(--neon-cyan),
-    0 0 60px rgba(77,238,255,0.4);
+  font-family: 'Orbitron', sans-serif; font-size: clamp(38px, 9vw, 72px); font-weight: 900;
+  letter-spacing: 4px; color: #fff;
+  text-shadow: 0 0 10px var(--neon-cyan), 0 0 30px var(--neon-cyan), 0 0 60px rgba(0,229,255,0.5);
   animation: title-flicker 4s ease-in-out infinite;
 }
 .game-logo span {
-  color: var(--neon-magenta);
-  text-shadow:
-    0 0 10px var(--neon-magenta),
-    0 0 30px var(--neon-magenta),
-    0 0 60px rgba(255,61,240,0.4);
+  color: var(--neon-blue);
+  text-shadow: 0 0 10px var(--neon-blue), 0 0 30px var(--neon-blue), 0 0 60px rgba(0,85,255,0.6);
 }
+@keyframes title-flicker { 0%, 92%, 100% { opacity: 1; } 94% { opacity: 0.85; } 96% { opacity: 1; } 97% { opacity: 0.9; } }
+.tagline { color: var(--text-dim); letter-spacing: 2px; font-size: 14px; margin-top: -8px; }
+.menu-highscore { color: var(--neon-cyan); font-size: 14px; letter-spacing: 2px; text-shadow: 0 0 8px rgba(0,229,255,0.4); }
 
-@keyframes title-flicker {
-  0%, 92%, 100% { opacity: 1; }
-  94% { opacity: 0.85; }
-  96% { opacity: 1; }
-  97% { opacity: 0.9; }
-}
+.overlay-title { font-family: 'Orbitron', sans-serif; font-size: clamp(30px, 7vw, 50px); letter-spacing: 4px; color: var(--neon-cyan); text-shadow: 0 0 16px var(--neon-cyan); }
+.overlay-title.danger { color: var(--neon-red); text-shadow: 0 0 16px var(--neon-red); }
 
-.tagline {
-  color: var(--text-dim);
-  letter-spacing: 2px;
-  font-size: 14px;
-  margin-top: -8px;
-}
-
-.menu-highscore {
-  color: var(--neon-gold);
-  font-size: 14px;
-  letter-spacing: 2px;
-  text-shadow: 0 0 8px rgba(255,210,61,0.6);
-}
-#start-highscore, #final-highscore, #final-score, #final-level { font-weight: bold; }
-
-.overlay-title {
-  font-family: 'Orbitron', 'Trebuchet MS', sans-serif;
-  font-size: clamp(30px, 7vw, 50px);
-  letter-spacing: 4px;
-  color: var(--neon-cyan);
-  text-shadow: 0 0 16px var(--neon-cyan);
-}
-.overlay-title.danger {
-  color: var(--neon-red);
-  text-shadow: 0 0 16px var(--neon-red);
-}
-
-#new-highscore-badge {
-  color: var(--neon-gold);
-  letter-spacing: 3px;
-  font-size: 14px;
-  animation: chip-pulse 0.8s ease-in-out infinite;
-  text-shadow: 0 0 10px var(--neon-gold);
-}
-
-.final-stats {
-  display: flex;
-  gap: 24px;
-  flex-wrap: wrap;
-  justify-content: center;
-  margin: 6px 0 4px;
-}
-.final-stat {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  background: var(--bg-panel);
-  border: 1px solid var(--border-glow);
-  border-radius: 10px;
-  padding: 10px 18px;
-  min-width: 110px;
-}
+#new-highscore-badge { color: var(--neon-gold); letter-spacing: 3px; font-size: 14px; animation: chip-pulse 0.8s infinite; text-shadow: 0 0 10px var(--neon-gold); }
+.final-stats { display: flex; gap: 24px; flex-wrap: wrap; justify-content: center; margin: 6px 0 4px; }
+.final-stat { display: flex; flex-direction: column; gap: 4px; background: var(--bg-panel); border: 1px solid var(--border-glow); border-radius: 8px; padding: 10px 18px; min-width: 110px; }
 .final-label { font-size: 10px; letter-spacing: 1.5px; color: var(--text-dim); }
-.final-value { font-size: 24px; color: #fff; text-shadow: 0 0 8px var(--neon-cyan); }
+.final-value { font-size: 24px; color: #fff; font-weight: bold; text-shadow: 0 0 8px var(--neon-cyan); }
 
-/* =====================================================================
-   Neon buttons
-   ===================================================================== */
 .neon-btn {
-  font-family: 'Orbitron', 'Trebuchet MS', sans-serif;
-  font-size: 15px;
-  letter-spacing: 2px;
-  padding: 13px 34px;
-  border-radius: 8px;
-  border: 1px solid var(--neon-cyan);
-  background: rgba(77, 238, 255, 0.06);
-  color: var(--neon-cyan);
-  cursor: pointer;
-  box-shadow: 0 0 10px rgba(77,238,255,0.25), inset 0 0 10px rgba(77,238,255,0.05);
-  transition: transform 0.12s ease, box-shadow 0.2s ease, background 0.2s ease;
+  font-family: 'Orbitron', sans-serif; font-size: 15px; letter-spacing: 2px; padding: 13px 34px;
+  border-radius: 6px; border: 1px solid var(--neon-cyan); background: rgba(0, 229, 255, 0.06);
+  color: var(--neon-cyan); cursor: pointer; box-shadow: 0 0 10px rgba(0,229,255,0.25), inset 0 0 10px rgba(0,229,255,0.05);
+  transition: transform 0.12s, box-shadow 0.2s, background 0.2s;
 }
-.neon-btn:hover {
-  background: rgba(77, 238, 255, 0.16);
-  box-shadow: 0 0 22px rgba(77,238,255,0.55), inset 0 0 14px rgba(77,238,255,0.12);
-  transform: translateY(-2px);
-}
+.neon-btn:hover { background: rgba(0, 229, 255, 0.15); box-shadow: 0 0 22px rgba(0,229,255,0.5), inset 0 0 14px rgba(0,229,255,0.15); transform: translateY(-2px); }
 .neon-btn:active { transform: translateY(0) scale(0.96); }
+.neon-btn.primary { border-color: var(--neon-blue); color: #fff; background: linear-gradient(135deg, rgba(0,85,255,0.4), rgba(0,229,255,0.2)); box-shadow: 0 0 18px rgba(0,85,255,0.5); }
+.neon-btn.primary:hover { box-shadow: 0 0 30px rgba(0,85,255,0.8); }
 
-.neon-btn.primary {
-  border-color: var(--neon-magenta);
-  color: #fff;
-  background: linear-gradient(135deg, rgba(255,61,240,0.35), rgba(155,92,255,0.35));
-  box-shadow: 0 0 18px rgba(255,61,240,0.45);
-}
-.neon-btn.primary:hover {
-  box-shadow: 0 0 30px rgba(255,61,240,0.7);
-}
-
-.controls-hint {
-  display: flex;
-  gap: 22px;
-  margin-top: 18px;
-  flex-wrap: wrap;
-  justify-content: center;
-}
-.hint-block {
-  display: flex;
-  flex-direction: column;
-  gap: 3px;
-  align-items: center;
-  color: var(--text-dim);
-  font-size: 12px;
-}
-.hint-block strong {
-  color: var(--neon-purple);
-  letter-spacing: 1.5px;
-  font-size: 11px;
-  text-shadow: 0 0 6px var(--neon-purple);
-}
+.controls-hint { display: flex; gap: 22px; margin-top: 18px; flex-wrap: wrap; justify-content: center; }
+.hint-block { display: flex; flex-direction: column; gap: 3px; align-items: center; color: var(--text-dim); font-size: 12px; }
+.hint-block strong { color: var(--neon-blue); letter-spacing: 1.5px; font-size: 11px; text-shadow: 0 0 6px var(--neon-blue); }
 
 /* =====================================================================
-   Touch controls (mobile)
+   RETRO GAMEPAD (MOBILE ONLY)
    ===================================================================== */
-#touch-controls {
-  position: absolute;
-  bottom: 0; left: 0; right: 0;
-  z-index: 12;
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-end;
-  padding: 18px 18px 26px;
-  pointer-events: none;
+#mobile-gamepad {
+  width: 100%;
+  height: 240px; /* Fixed height for the controller */
+  background: linear-gradient(180deg, #050a14, #020408);
+  border-top: 3px solid var(--neon-blue);
+  box-shadow: 0 -8px 25px rgba(0, 85, 255, 0.25);
+  display: none; /* Hidden by default, shown via media query */
+  z-index: 50;
 }
 
-.touch-side {
-  display: flex;
-  gap: 14px;
-  pointer-events: auto;
+/* Show Gamepad on touch devices */
+@media (hover: none) and (pointer: coarse) {
+  #mobile-gamepad.enabled {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 20px;
+  }
 }
 
-.touch-btn {
-  width: 58px;
-  height: 58px;
-  border-radius: 50%;
-  border: 1px solid var(--border-glow);
-  background: rgba(12, 10, 28, 0.72);
+/* D-Pad Styling */
+.d-pad {
+  display: grid;
+  grid-template-columns: 55px 55px 55px;
+  grid-template-rows: 55px 55px 55px;
+  gap: 2px;
+}
+.d-btn {
+  background: #111828;
+  border: 1px solid var(--neon-blue);
   color: var(--neon-cyan);
   font-size: 20px;
-  box-shadow: 0 0 16px rgba(77,238,255,0.25);
-  pointer-events: auto;
-  touch-action: none;
+  display: flex; align-items: center; justify-content: center;
+  user-select: none; touch-action: none; cursor: pointer;
+  box-shadow: inset 0 0 10px rgba(0,85,255,0.3);
 }
-.touch-btn:active { background: rgba(77,238,255,0.25); transform: scale(0.92); }
+.d-btn:active { background: var(--neon-blue); color: #fff; box-shadow: 0 0 15px var(--neon-blue); }
+.d-btn.up { grid-column: 2; grid-row: 1; border-radius: 12px 12px 4px 4px; }
+.d-btn.left { grid-column: 1; grid-row: 2; border-radius: 12px 4px 4px 12px; }
+.d-btn.right { grid-column: 3; grid-row: 2; border-radius: 4px 12px 12px 4px; }
+.d-btn.down { grid-column: 2; grid-row: 3; border-radius: 4px 4px 12px 12px; }
+.d-center { grid-column: 2; grid-row: 2; background: #111828; }
 
-.touch-fire {
-  width: 72px;
-  height: 72px;
-  color: var(--neon-magenta);
-  border-color: rgba(255,61,240,0.5);
-  box-shadow: 0 0 18px rgba(255,61,240,0.35);
-  font-size: 22px;
+/* Action Buttons Styling */
+.action-buttons {
+  display: flex;
+  gap: 20px;
+  transform: rotate(-12deg); /* Classic retro tilt */
+  margin-right: 15px;
 }
-
-/* Show touch controls automatically on touch-capable / narrow devices */
-@media (hover: none) and (pointer: coarse) {
-  #touch-controls.enabled { display: flex; }
+.btn-group {
+  display: flex; flex-direction: column; align-items: center; gap: 8px;
 }
+.a-btn {
+  width: 65px; height: 65px;
+  border-radius: 50%; border: none;
+  font-family: 'Orbitron', sans-serif; font-weight: 900; font-size: 24px;
+  color: #000; user-select: none; touch-action: none; cursor: pointer;
+  transition: transform 0.05s, box-shadow 0.05s;
+}
+.a-btn:active { transform: translateY(4px); }
+.bomb-btn { 
+  background: var(--neon-gold); margin-top: 15px;
+  box-shadow: 0 6px 0px #b38f00, 0 0 20px rgba(255,204,0,0.6); 
+}
+.bomb-btn:active { box-shadow: 0 2px 0px #b38f00, 0 0 10px rgba(255,204,0,0.8); }
 
-/* =====================================================================
-   Responsive tweaks
-   ===================================================================== */
+.fire-btn { 
+  background: var(--neon-cyan); margin-top: -15px;
+  box-shadow: 0 6px 0px #00a0b3, 0 0 20px rgba(0,229,255,0.6); 
+}
+.fire-btn:active { box-shadow: 0 2px 0px #00a0b3, 0 0 10px rgba(0,229,255,0.8); }
+
+.btn-label { font-family: 'Orbitron', sans-serif; font-size: 11px; color: var(--text-dim); letter-spacing: 2px; }
+
+/* Responsive Adjustments */
 @media (max-width: 600px) {
   .hud-title { font-size: 11px; letter-spacing: 2px; }
-  .hud-value { font-size: 15px; }
-  .hud-label { font-size: 9px; }
+  .hud-value { font-size: 15px; } .hud-label { font-size: 9px; }
   #hud { padding: 8px 8px; }
   .hud-left, .hud-right { padding: 6px 10px; }
-  .final-stats { gap: 12px; }
-  .final-stat { padding: 8px 12px; min-width: 90px; }
+  .final-stats { gap: 12px; } .final-stat { padding: 8px 12px; min-width: 90px; }
   .final-value { font-size: 19px; }
-}
-
-@media (max-width: 380px) {
-  .hud-center { max-width: 140px; }
-  #active-powerups { flex-wrap: wrap; }
+  .icon-btn { top: 75px; right: 10px; width: 34px; height: 34px; font-size: 11px; } 
+  #mute-btn { top: 120px; }
+  
+  /* Make Gamepad slightly smaller on tiny screens */
+  #mobile-gamepad { height: 210px; padding: 0 10px; }
+  .d-pad { grid-template-columns: 48px 48px 48px; grid-template-rows: 48px 48px 48px; }
+  .a-btn { width: 55px; height: 55px; font-size: 20px; }
 }
