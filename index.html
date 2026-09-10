@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-<title>STELLAR SIEGE — Space Shooter</title>
+<title>STELLAR SIEGE 2.5D — Space Shooter</title>
 <link rel="stylesheet" href="style.css" />
 </head>
 <body>
@@ -13,6 +13,7 @@
     <!-- Top Half: The Game World & HUD -->
     <div id="game-view">
       <canvas id="game-canvas"></canvas>
+      <div id="scanlines"></div>
 
       <!-- Visual Screen Flash (for EMP Bombs) -->
       <div id="screen-flash"></div>
@@ -22,7 +23,7 @@
         <div class="hud-left">
           <div class="hud-title">STELLAR SIEGE</div>
           <div class="hud-row">
-            <span class="hud-label">LEVEL</span>
+            <span class="hud-label">SECTOR</span>
             <span id="level-value" class="hud-value">1</span>
           </div>
         </div>
@@ -69,70 +70,85 @@
       </div>
 
       <!-- ============ START SCREEN ============ -->
-      <div id="start-screen" class="overlay-screen">
-        <h1 class="game-logo">STELLAR<span>SIEGE</span></h1>
-        <p class="tagline">Defend the void. Survive the swarm.</p>
-
-        <div class="menu-highscore">
-          HIGH SCORE&nbsp; <span id="start-highscore">0</span>
+      <div id="start-screen" class="overlay-screen cinematic-start">
+        
+        <div class="title-block">
+          <h1 class="game-logo">STELLAR<span>SIEGE</span></h1>
+          <p class="tagline">INTO THE GRID // SURVIVE THE SWARM</p>
         </div>
 
-        <button id="start-btn" class="neon-btn primary">START GAME</button>
+        <div class="action-block">
+          <div class="menu-highscore">
+            HIGH SCORE <span id="start-highscore">0</span>
+          </div>
+          <button id="start-btn" class="neon-btn primary pulse-btn">LAUNCH FIGHTER</button>
+        </div>
 
-        <div class="controls-hint">
+        <div class="controls-hint minimal-hint">
           <div class="hint-block">
             <strong>MOVE</strong>
-            <span>W A S D &nbsp;|&nbsp; Arrows &nbsp;|&nbsp; D-Pad</span>
+            <span>A D &nbsp;|&nbsp; Arrows <br> <span class="touch-hint">Touch ◀ ▶</span></span>
           </div>
           <div class="hint-block">
             <strong>FIRE</strong>
-            <span>SPACEBAR &nbsp;|&nbsp; A Button</span>
+            <span>SPACEBAR <br> <span class="touch-hint">Touch (A)</span></span>
           </div>
           <div class="hint-block">
             <strong>EMP BOMB</strong>
-            <span>B Key &nbsp;|&nbsp; B Button</span>
+            <span>B Key <br> <span class="touch-hint">Touch (B)</span></span>
           </div>
         </div>
+
       </div>
 
       <!-- ============ PAUSE SCREEN ============ -->
       <div id="pause-screen" class="overlay-screen hidden">
-        <h2 class="overlay-title">PAUSED</h2>
-        <button id="resume-btn" class="neon-btn primary">RESUME</button>
-        <button id="restart-btn-pause" class="neon-btn">RESTART</button>
+        <div class="holo-panel">
+          <div class="corner tl"></div><div class="corner tr"></div>
+          <div class="corner bl"></div><div class="corner br"></div>
+          
+          <h2 class="overlay-title">SYSTEM PAUSED</h2>
+          <button id="resume-btn" class="neon-btn primary">RESUME</button>
+          <button id="restart-btn-pause" class="neon-btn">RESTART</button>
+        </div>
       </div>
 
       <!-- ============ GAME OVER SCREEN ============ -->
       <div id="gameover-screen" class="overlay-screen hidden">
-        <h2 class="overlay-title danger">HULL CRITICAL</h2>
-        <div id="new-highscore-badge" class="hidden">★ NEW HIGH SCORE ★</div>
-        <div class="final-stats">
-          <div class="final-stat">
-            <span class="final-label">FINAL SCORE</span>
-            <span id="final-score" class="final-value">0</span>
+        <div class="holo-panel danger">
+          <div class="corner tl"></div><div class="corner tr"></div>
+          <div class="corner bl"></div><div class="corner br"></div>
+          
+          <h2 class="overlay-title glitch-text">HULL BREACHED</h2>
+          <div id="new-highscore-badge" class="hidden">★ NEW HIGH SCORE ★</div>
+          
+          <div class="final-stats">
+            <div class="final-stat">
+              <span class="final-label">FINAL SCORE</span>
+              <span id="final-score" class="final-value">0</span>
+            </div>
+            <div class="final-stat">
+              <span class="final-label">HIGH SCORE</span>
+              <span id="final-highscore" class="final-value">0</span>
+            </div>
+            <div class="final-stat">
+              <span class="final-label">SECTOR REACHED</span>
+              <span id="final-level" class="final-value">1</span>
+            </div>
           </div>
-          <div class="final-stat">
-            <span class="final-label">HIGH SCORE</span>
-            <span id="final-highscore" class="final-value">0</span>
-          </div>
-          <div class="final-stat">
-            <span class="final-label">LEVEL REACHED</span>
-            <span id="final-level" class="final-value">1</span>
-          </div>
+          
+          <button id="restart-btn" class="neon-btn danger-btn">REDEPLOY</button>
         </div>
-        <button id="restart-btn" class="neon-btn primary">PLAY AGAIN</button>
       </div>
     </div> <!-- /#game-view -->
 
     <!-- ============ RETRO GAMEPAD (MOBILE ONLY) ============ -->
-    <div id="mobile-gamepad" class="hidden">
-      <!-- Left side: D-Pad -->
+    <!-- Removed the 'hidden' class so the JS/CSS can trigger it properly -->
+    <div id="mobile-gamepad">
+      <!-- Left side: Left/Right D-Pad -->
       <div class="d-pad">
-        <button class="d-btn up" id="btn-up">▲</button>
         <button class="d-btn left" id="btn-left">◀</button>
         <button class="d-btn right" id="btn-right">▶</button>
-        <button class="d-btn down" id="btn-down">▼</button>
-        <div class="d-center"></div>
       </div>
 
       <!-- Right side: Action Buttons -->
