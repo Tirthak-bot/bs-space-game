@@ -2,14 +2,9 @@
 Genukirknuly AI Slop (Uni Stuff)
 
 # Stellar Siege
-
-## Tagline
 **Defend the void. Survive the swarm.**
 
-## One-liner
-A fast, neon-soaked browser space shooter — no downloads, no install, just you, your ship, and an escalating swarm of alien fighters.
-
-## Short descriptio
+## Short description
 Stellar Siege is a browser-based arcade space shooter built for quick sessions and high-score chasing. Blast through waves of increasingly dangerous enemies, chain kills for score multipliers, grab power-ups mid-fight, and see how deep into the swarm you can survive. Playable instantly on desktop — no install required.
 
 ## Longer description 
