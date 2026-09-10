@@ -8,119 +8,144 @@
 </head>
 <body>
 
-  <!-- ============ GAME CONTAINER ============ -->
-  <!-- Everything (canvas + all UI overlays) lives inside #game-container
-       so it can be sized/centered responsively as one unit. -->
   <div id="game-container">
+    
+    <!-- Top Half: The Game World & HUD -->
+    <div id="game-view">
+      <canvas id="game-canvas"></canvas>
 
-    <!-- The canvas is the actual game world: player, bullets, enemies,
-         particles and the starfield are all drawn here in script.js -->
-    <canvas id="game-canvas"></canvas>
+      <!-- Visual Screen Flash (for EMP Bombs) -->
+      <div id="screen-flash"></div>
 
-    <!-- ============ TOP HUD (visible during gameplay) ============ -->
-    <div id="hud" class="hidden">
-      <div class="hud-left">
-        <div class="hud-title">STELLAR SIEGE</div>
-        <div class="hud-row">
-          <span class="hud-label">LEVEL</span>
-          <span id="level-value" class="hud-value">1</span>
+      <!-- ============ TOP HUD ============ -->
+      <div id="hud" class="hidden">
+        <div class="hud-left">
+          <div class="hud-title">STELLAR SIEGE</div>
+          <div class="hud-row">
+            <span class="hud-label">LEVEL</span>
+            <span id="level-value" class="hud-value">1</span>
+          </div>
+        </div>
+
+        <div class="hud-center">
+          <div id="health-bar-outer">
+            <div id="health-bar-inner"></div>
+            <span id="health-text">100</span>
+          </div>
+          <div class="resource-row">
+            <div class="bomb-tracker">
+              <span class="hud-label">EMP</span>
+              <span id="bomb-count">2</span>
+            </div>
+            <div id="active-powerups"></div>
+          </div>
+        </div>
+
+        <div class="hud-right">
+          <div class="hud-row">
+            <span class="hud-label">SCORE</span>
+            <span id="score-value" class="hud-value">0</span>
+          </div>
+          <div class="hud-row">
+            <span class="hud-label">BEST</span>
+            <span id="highscore-value" class="hud-value">0</span>
+          </div>
         </div>
       </div>
 
-      <div class="hud-center">
-        <div id="health-bar-outer">
-          <div id="health-bar-inner"></div>
-          <span id="health-text">100</span>
-        </div>
-        <div id="active-powerups"></div>
-      </div>
+      <!-- Utility Buttons -->
+      <button id="pause-btn" class="icon-btn hidden" aria-label="Pause">❚❚</button>
+      <button id="mute-btn" class="icon-btn hidden" aria-label="Mute sound">🔊</button>
 
-      <div class="hud-right">
-        <div class="hud-row">
-          <span class="hud-label">SCORE</span>
-          <span id="score-value" class="hud-value">0</span>
-        </div>
-        <div class="hud-row">
-          <span class="hud-label">BEST</span>
-          <span id="highscore-value" class="hud-value">0</span>
+      <!-- Dynamic Overlay Texts -->
+      <div id="combo-display" class="hidden"></div>
+      <div id="level-toast" class="hidden"></div>
+      
+      <div id="boss-ui" class="hidden">
+        <div class="boss-name">DREADNOUGHT</div>
+        <div class="boss-bar-outer">
+          <div id="boss-bar-inner"></div>
         </div>
       </div>
-    </div>
 
-    <!-- Pause + mute buttons, floating top-right during play -->
-    <button id="pause-btn" class="icon-btn hidden" aria-label="Pause">❚❚</button>
-    <button id="mute-btn" class="icon-btn hidden" aria-label="Mute sound">🔊</button>
+      <!-- ============ START SCREEN ============ -->
+      <div id="start-screen" class="overlay-screen">
+        <h1 class="game-logo">STELLAR<span>SIEGE</span></h1>
+        <p class="tagline">Defend the void. Survive the swarm.</p>
 
-    <!-- Combo streak readout, shown once the player chains 3+ kills -->
-    <div id="combo-display" class="hidden"></div>
-
-    <!-- Level-up toast, briefly shown on a level change -->
-    <div id="level-toast" class="hidden"></div>
-
-    <!-- ============ START SCREEN ============ -->
-    <div id="start-screen" class="overlay-screen">
-      <h1 class="game-logo">STELLAR<span>SIEGE</span></h1>
-      <p class="tagline">Defend the void. Survive the swarm.</p>
-
-      <div class="menu-highscore">
-        HIGH SCORE&nbsp; <span id="start-highscore">0</span>
-      </div>
-
-      <button id="start-btn" class="neon-btn primary">START GAME</button>
-
-      <div class="controls-hint">
-        <div class="hint-block">
-          <strong>MOVE</strong>
-          <span>← → &nbsp;or&nbsp; A D</span>
+        <div class="menu-highscore">
+          HIGH SCORE&nbsp; <span id="start-highscore">0</span>
         </div>
-        <div class="hint-block">
-          <strong>FIRE</strong>
-          <span>SPACEBAR</span>
-        </div>
-        <div class="hint-block">
-          <strong>PAUSE</strong>
-          <span>P &nbsp;or&nbsp; ❚❚</span>
+
+        <button id="start-btn" class="neon-btn primary">START GAME</button>
+
+        <div class="controls-hint">
+          <div class="hint-block">
+            <strong>MOVE</strong>
+            <span>W A S D &nbsp;|&nbsp; Arrows &nbsp;|&nbsp; D-Pad</span>
+          </div>
+          <div class="hint-block">
+            <strong>FIRE</strong>
+            <span>SPACEBAR &nbsp;|&nbsp; A Button</span>
+          </div>
+          <div class="hint-block">
+            <strong>EMP BOMB</strong>
+            <span>B Key &nbsp;|&nbsp; B Button</span>
+          </div>
         </div>
       </div>
-    </div>
 
-    <!-- ============ PAUSE SCREEN ============ -->
-    <div id="pause-screen" class="overlay-screen hidden">
-      <h2 class="overlay-title">PAUSED</h2>
-      <button id="resume-btn" class="neon-btn primary">RESUME</button>
-      <button id="restart-btn-pause" class="neon-btn">RESTART</button>
-    </div>
+      <!-- ============ PAUSE SCREEN ============ -->
+      <div id="pause-screen" class="overlay-screen hidden">
+        <h2 class="overlay-title">PAUSED</h2>
+        <button id="resume-btn" class="neon-btn primary">RESUME</button>
+        <button id="restart-btn-pause" class="neon-btn">RESTART</button>
+      </div>
 
-    <!-- ============ GAME OVER SCREEN ============ -->
-    <div id="gameover-screen" class="overlay-screen hidden">
-      <h2 class="overlay-title danger">GAME OVER</h2>
-      <div id="new-highscore-badge" class="hidden">★ NEW HIGH SCORE ★</div>
-      <div class="final-stats">
-        <div class="final-stat">
-          <span class="final-label">FINAL SCORE</span>
-          <span id="final-score" class="final-value">0</span>
+      <!-- ============ GAME OVER SCREEN ============ -->
+      <div id="gameover-screen" class="overlay-screen hidden">
+        <h2 class="overlay-title danger">HULL CRITICAL</h2>
+        <div id="new-highscore-badge" class="hidden">★ NEW HIGH SCORE ★</div>
+        <div class="final-stats">
+          <div class="final-stat">
+            <span class="final-label">FINAL SCORE</span>
+            <span id="final-score" class="final-value">0</span>
+          </div>
+          <div class="final-stat">
+            <span class="final-label">HIGH SCORE</span>
+            <span id="final-highscore" class="final-value">0</span>
+          </div>
+          <div class="final-stat">
+            <span class="final-label">LEVEL REACHED</span>
+            <span id="final-level" class="final-value">1</span>
+          </div>
         </div>
-        <div class="final-stat">
-          <span class="final-label">HIGH SCORE</span>
-          <span id="final-highscore" class="final-value">0</span>
+        <button id="restart-btn" class="neon-btn primary">PLAY AGAIN</button>
+      </div>
+    </div> <!-- /#game-view -->
+
+    <!-- ============ RETRO GAMEPAD (MOBILE ONLY) ============ -->
+    <div id="mobile-gamepad" class="hidden">
+      <!-- Left side: D-Pad -->
+      <div class="d-pad">
+        <button class="d-btn up" id="btn-up">▲</button>
+        <button class="d-btn left" id="btn-left">◀</button>
+        <button class="d-btn right" id="btn-right">▶</button>
+        <button class="d-btn down" id="btn-down">▼</button>
+        <div class="d-center"></div>
+      </div>
+
+      <!-- Right side: Action Buttons -->
+      <div class="action-buttons">
+        <div class="btn-group">
+          <button class="a-btn bomb-btn" id="btn-bomb">B</button>
+          <span class="btn-label">EMP</span>
         </div>
-        <div class="final-stat">
-          <span class="final-label">LEVEL REACHED</span>
-          <span id="final-level" class="final-value">1</span>
+        <div class="btn-group">
+          <button class="a-btn fire-btn" id="btn-fire">A</button>
+          <span class="btn-label">FIRE</span>
         </div>
       </div>
-      <button id="restart-btn" class="neon-btn primary">PLAY AGAIN</button>
-    </div>
-
-    <!-- ============ MOBILE TOUCH CONTROLS ============ -->
-    <!-- Shown only on touch/small screens via CSS media query.
-         JS attaches touchstart/touchend (and mouse fallback) listeners. -->
-    <div id="touch-controls" class="hidden">
-      <div class="touch-side">
-        <button id="touch-left" class="touch-btn" aria-label="Move left">◀</button>
-        <button id="touch-right" class="touch-btn" aria-label="Move right">▶</button>
-      </div>
-      <button id="touch-fire" class="touch-btn touch-fire" aria-label="Fire">●</button>
     </div>
 
   </div>
