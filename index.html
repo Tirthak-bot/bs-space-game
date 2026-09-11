@@ -84,18 +84,21 @@
           <button id="start-btn" class="neon-btn primary pulse-btn">LAUNCH FIGHTER</button>
         </div>
 
-        <div class="controls-hint minimal-hint">
-          <div class="hint-block">
-            <strong>MOVE</strong>
-            <span>A D &nbsp;|&nbsp; Arrows <br> <span class="touch-hint">Touch ◀ ▶</span></span>
+        <!-- SEAMLESS YELLOW CONTROLS HINT -->
+        <div class="controls-hint expanded-hint">
+          <div class="hint-section">
+            <div class="hint-header">DESKTOP (KEYBOARD)</div>
+            <div class="hint-row"><strong>Move Left / Right:</strong> <span>A / D or ← / →</span></div>
+            <div class="hint-row"><strong>Fire Weapons:</strong> <span>Spacebar</span></div>
+            <div class="hint-row"><strong>Deploy EMP Bomb:</strong> <span>B</span></div>
+            <div class="hint-row"><strong>Pause Game:</strong> <span>P</span></div>
           </div>
-          <div class="hint-block">
-            <strong>FIRE</strong>
-            <span>SPACEBAR <br> <span class="touch-hint">Touch (A)</span></span>
-          </div>
-          <div class="hint-block">
-            <strong>EMP BOMB</strong>
-            <span>B Key <br> <span class="touch-hint">Touch (B)</span></span>
+          <div class="hint-section">
+            <div class="hint-header">MOBILE (TOUCH)</div>
+            <!-- Removed the sentence per your request -->
+            <div class="hint-row"><strong>Maneuver:</strong> <span>Use D-Pad (◀ ▶)</span></div>
+            <div class="hint-row"><strong>Fire Weapons:</strong> <span>Tap (A)</span></div>
+            <div class="hint-row"><strong>Deploy EMP Bomb:</strong> <span>Tap (B)</span></div>
           </div>
         </div>
 
@@ -143,7 +146,6 @@
     </div> <!-- /#game-view -->
 
     <!-- ============ RETRO GAMEPAD (MOBILE ONLY) ============ -->
-    <!-- Removed the 'hidden' class so the JS/CSS can trigger it properly -->
     <div id="mobile-gamepad">
       <!-- Left side: Left/Right D-Pad -->
       <div class="d-pad">
