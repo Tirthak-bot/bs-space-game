@@ -1,6 +1,3 @@
-# BS-space-game
-Genukirknuly AI Slop - Well Not Really.
-
 # Stellar Siege
 **Into The Grid. Survive the swarm.**
 
