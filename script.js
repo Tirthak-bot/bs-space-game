@@ -1,6 +1,6 @@
 /* =====================================================================
    STELLAR SIEGE 2.5D — script.js
-   Architecture: Touch Event Fixes, Stable Movement
+   Architecture: Depth Scaling, Pointer Events Fix, Gamepad Mobile Fix
    ===================================================================== */
 
 const canvas = document.getElementById('game-canvas');
@@ -38,31 +38,46 @@ let _memoryHighScore = 0;
 function loadHighScore() { try { return Number(localStorage.getItem('stellarSiege_highScore') || 0); } catch (e) { return _memoryHighScore; } }
 function saveHighScore(value) { _memoryHighScore = value; try { localStorage.setItem('stellarSiege_highScore', String(value)); } catch (e) {} }
 
-/* --- AUDIO MANAGER --- */
+/* --- AUDIO MANAGER (Hardened to prevent canvas freezing) --- */
 const Audio2 = {
   ctx: null, muted: false,
-  ensure() { if (!this.ctx) { const AC = window.AudioContext || window.webkitAudioContext; this.ctx = new AC(); } if (this.ctx.state === 'suspended') this.ctx.resume(); return this.ctx; },
+  ensure() { 
+    try {
+      if (!this.ctx) { const AC = window.AudioContext || window.webkitAudioContext; this.ctx = new AC(); } 
+      if (this.ctx.state === 'suspended') this.ctx.resume(); 
+      return this.ctx; 
+    } catch(e) { return null; }
+  },
   tone(freq, duration, type = 'square', startGain = 0.15, freqEnd = null) {
-    if (this.muted) return; const ac = this.ensure(); const osc = ac.createOscillator(); const gain = ac.createGain();
-    osc.type = type; osc.frequency.setValueAtTime(freq, ac.currentTime);
-    if (freqEnd !== null) osc.frequency.exponentialRampToValueAtTime(Math.max(freqEnd, 1), ac.currentTime + duration);
-    gain.gain.setValueAtTime(startGain, ac.currentTime); gain.gain.exponentialRampToValueAtTime(0.0001, ac.currentTime + duration);
-    osc.connect(gain).connect(ac.destination); osc.start(); osc.stop(ac.currentTime + duration + 0.02);
+    if (this.muted) return; 
+    const ac = this.ensure(); if (!ac) return;
+    try {
+      const osc = ac.createOscillator(); const gain = ac.createGain();
+      osc.type = type; osc.frequency.setValueAtTime(freq, ac.currentTime);
+      if (freqEnd !== null) osc.frequency.exponentialRampToValueAtTime(Math.max(freqEnd, 1), ac.currentTime + duration);
+      gain.gain.setValueAtTime(startGain, ac.currentTime); gain.gain.exponentialRampToValueAtTime(0.0001, ac.currentTime + duration);
+      osc.connect(gain).connect(ac.destination); osc.start(); osc.stop(ac.currentTime + duration + 0.02);
+    } catch(e) {}
   },
   shoot() { this.tone(880, 0.09, 'square', 0.06, 340); },
   explosion() {
-    if (this.muted) return; const ac = this.ensure(); const bufferSize = ac.sampleRate * 0.35;
-    const buffer = ac.createBuffer(1, bufferSize, ac.sampleRate); const data = buffer.getChannelData(0);
-    for (let i = 0; i < bufferSize; i++) data[i] = (Math.random() * 2 - 1) * (1 - i / bufferSize);
-    const noise = ac.createBufferSource(); noise.buffer = buffer; const filter = ac.createBiquadFilter();
-    filter.type = 'lowpass'; filter.frequency.setValueAtTime(1800, ac.currentTime); filter.frequency.exponentialRampToValueAtTime(80, ac.currentTime + 0.3);
-    const gain = ac.createGain(); gain.gain.setValueAtTime(0.35, ac.currentTime); gain.gain.exponentialRampToValueAtTime(0.0001, ac.currentTime + 0.35);
-    noise.connect(filter).connect(gain).connect(ac.destination); noise.start();
+    if (this.muted) return; 
+    const ac = this.ensure(); if (!ac) return;
+    try {
+      const bufferSize = ac.sampleRate * 0.35;
+      const buffer = ac.createBuffer(1, bufferSize, ac.sampleRate); const data = buffer.getChannelData(0);
+      for (let i = 0; i < bufferSize; i++) data[i] = (Math.random() * 2 - 1) * (1 - i / bufferSize);
+      const noise = ac.createBufferSource(); noise.buffer = buffer; const filter = ac.createBiquadFilter();
+      filter.type = 'lowpass'; filter.frequency.setValueAtTime(1800, ac.currentTime); filter.frequency.exponentialRampToValueAtTime(80, ac.currentTime + 0.3);
+      const gain = ac.createGain(); gain.gain.setValueAtTime(0.35, ac.currentTime); gain.gain.exponentialRampToValueAtTime(0.0001, ac.currentTime + 0.35);
+      noise.connect(filter).connect(gain).connect(ac.destination); noise.start();
+    } catch(e) {}
   },
   powerup() { const notes = [523, 659, 784, 1046]; notes.forEach((f, i) => setTimeout(() => this.tone(f, 0.14, 'triangle', 0.12), i * 60)); },
   hit() { this.tone(180, 0.12, 'sawtooth', 0.12, 60); },
   gameOver() { const notes = [392, 349, 293, 220, 150]; notes.forEach((f, i) => setTimeout(() => this.tone(f, 0.4, 'sawtooth', 0.18), i * 200)); },
-  bomb() { this.tone(60, 1.2, 'sawtooth', 0.4, 10); this.explosion(); this.explosion(); }
+  bomb() { this.tone(60, 1.2, 'sawtooth', 0.4, 10); this.explosion(); this.explosion(); },
+  levelUp() { const notes = [660, 880, 1108]; notes.forEach((f, i) => setTimeout(() => this.tone(f, 0.16, 'square', 0.1), i * 90)); }
 };
 
 /* --- 2.5D BACKGROUND ENVIRONMENT --- */
@@ -80,10 +95,10 @@ function buildStars() {
   for (let i = 0; i < 150; i++) { stars.push({ x: rand(-1200, 1200), y: rand(100, 800), z: rand(0, MAX_Z) }); }
 }
 function updateEnvironment(dt) {
-  let speed = 1800; // Playing
-  if (game.state === STATE.START) speed = 3500; // Hyper-warp menu
-  if (game.state === STATE.DYING) speed = 300;  // Slow mo death
-  if (game.state === STATE.OVER) speed = 80;   // Drifting space
+  let speed = 1800;
+  if (game.state === STATE.START) speed = 3500;
+  if (game.state === STATE.DYING) speed = 300;
+  if (game.state === STATE.OVER) speed = 80;
 
   gridOffset = (gridOffset + speed * dt) % 200;
   for (const s of stars) {
@@ -148,7 +163,6 @@ class Player {
     if (keys['ArrowRight'] || keys['d'] || keys['D'] || touchState.right) dx += 1;
     
     this.x = clamp(this.x + dx * this.speed * dt, playLeft + this.w/2, playRight - this.w/2);
-    
     this.bankAngle += ((dx * 0.4) - this.bankAngle) * 12 * dt;
     this.thrusterPhase += dt * 15;
 
@@ -323,41 +337,56 @@ function spawnHitShake(mag = 12) { game.shakeTime = 0.3; game.shakeMag = mag; }
 
 let player = new Player();
 
-/* --- INPUT HANDLING --- */
+/* --- INPUT HANDLING (UPGRADED TO POINTER EVENTS) --- */
 const touchState = { left: false, right: false, fire: false };
 
-window.addEventListener('keydown', (e) => { keys[e.key] = true; if (e.key === ' ') e.preventDefault(); if ((e.key === 'p' || e.key === 'P') && (game.state === STATE.PLAYING || game.state === STATE.PAUSED)) togglePause(); if ((e.key === 'b' || e.key === 'B') && game.state === STATE.PLAYING) triggerBomb(); });
+window.addEventListener('keydown', (e) => { 
+  keys[e.key] = true; if (e.key === ' ') e.preventDefault(); 
+  if ((e.key === 'p' || e.key === 'P') && (game.state === STATE.PLAYING || game.state === STATE.PAUSED)) togglePause(); 
+  if ((e.key === 'b' || e.key === 'B') && game.state === STATE.PLAYING) triggerBomb(); 
+});
 window.addEventListener('keyup', (e) => { keys[e.key] = false; });
 
-// Touch Control Binders with comprehensive mouse fallback for testability
+// Use Pointer Events for robust touch and mouse support that never sticks
 function bindTouchButton(id, stateKey, isBomb = false) {
   const el = document.getElementById(id); if (!el) return;
   const press = (e) => { e.preventDefault(); if(isBomb) triggerBomb(); else touchState[stateKey] = true; };
   const release = (e) => { e.preventDefault(); if(!isBomb) touchState[stateKey] = false; };
   
-  el.addEventListener('touchstart', press, { passive: false }); 
-  el.addEventListener('touchend', release, { passive: false }); 
-  el.addEventListener('touchcancel', release, { passive: false });
+  el.addEventListener('pointerdown', press); 
+  el.addEventListener('pointerup', release); 
+  el.addEventListener('pointerleave', release); 
+  el.addEventListener('pointercancel', release);
   
-  // Mouse fallbacks to ensure robust clicking on non-touch devices
-  el.addEventListener('mousedown', press);
-  el.addEventListener('mouseup', release);
-  el.addEventListener('mouseleave', release);
+  // Prevent any native touch behaviors like zooming
+  el.addEventListener('touchstart', (e) => e.preventDefault(), { passive: false });
 }
 bindTouchButton('btn-left', 'left'); bindTouchButton('btn-right', 'right'); bindTouchButton('btn-fire', 'fire'); bindTouchButton('btn-bomb', 'bomb', true);
 
-// Enable Gamepad if touch is natively supported
+// Show Gamepad if touch is natively supported
 if ('ontouchstart' in window || navigator.maxTouchPoints > 0) document.getElementById('mobile-gamepad').classList.add('enabled');
 
 /* --- LOGIC --- */
 function spawnEnemy() {
   if (game.bossActive) return;
+  
+  // Weighted Random to ensure enemies spawn reliably
   const available = Object.keys(ENEMY_TYPES).filter(k => ENEMY_TYPES[k].minLevel <= game.level);
-  let r = rand(0, available.length * 2); let picked = available[0];
-  for (let i = 0; i < available.length; i++) { if (r < (available.length - i)*2) { picked = available[i]; break; } }
+  let weights = available.map((k, i) => available.length - i);
+  let totalWeight = weights.reduce((a, b) => a + b, 0);
+  let r = rand(0, totalWeight);
+  let picked = available[0];
+  
+  for (let i = 0; i < available.length; i++) { 
+    if (r < weights[i]) { picked = available[i]; break; }
+    r -= weights[i];
+  }
+  
   enemies.push(new Enemy(picked));
 }
+
 function maybeDropPowerup(x, y) { if (Math.random() < 0.12) powerups.push(new PowerUp(x, y, Object.keys(POWERUP_TYPES)[randInt(0, Object.keys(POWERUP_TYPES).length - 1)])); }
+
 function updateDifficulty() {
   const newLevel = 1 + Math.floor(game.score / 1200);
   if (newLevel !== game.level) {
