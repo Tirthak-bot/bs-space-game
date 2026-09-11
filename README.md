@@ -35,7 +35,7 @@ Desktop (Keyboard)
 Mobile (Touch)
 
 - A responsive retro gamepad will automatically appear on touch devices.
-- Use the D-Pad (◀ ▶) to maneuver.
+- Use the D-Pad to maneuver.
 - Tap (A) to Fire and (B) to deploy an EMP Bomb.
 
 ## Feature list
