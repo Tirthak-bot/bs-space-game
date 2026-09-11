@@ -1,10 +1,7 @@
 # Stellar Siege
 **Into The Grid. Survive the swarm.**
 
-## Short description
-Stellar Siege is a browser-based arcade space shooter built for quick sessions and high-score chasing. Blast through waves of increasingly dangerous enemies, chain kills for score multipliers, grab power-ups mid-fight, and see how deep into the swarm you can survive. Playable instantly on desktop and Moblie — no install required.
 
-## Longer description 
 Stellar Siege drops you into the pilot seat of a lone starfighter holding the line against an endless alien assault. Waves start simple, but every few points unlocks a new threat — from nimble scouts to armored dreadnoughts — and the swarm never lets up. Chain kills without taking a hit to build a combo multiplier, grab rapid-fire, shield, and double-score power-ups as they drop, and push your reflexes to keep your streak alive. It's built entirely in the browser with a hand-tuned synthesized soundtrack, layered parallax starfields, and glowing neon visuals — runs smoothly on desktop.
 
 ## Controls
