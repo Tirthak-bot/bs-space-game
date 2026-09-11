@@ -39,7 +39,7 @@ Mobile (Touch)
 - Tap (A) to Fire and (B) to deploy an EMP Bomb.
 
 ## Feature list
- **Instant play, zero install** — runs in any modern browser, desktop or mobile
+**Runs in any modern browser, desktop or mobile**
 - **Escalating enemy roster** — six distinct enemy types unlock as you level up, from fast scouts to armored dreadnoughts
 - **Combo scoring system** — chain kills for up to a 2x score multiplier; get hit and the streak resets
 - **Power-ups** — rapid fire, shield, and double score drops keep runs unpredictable
