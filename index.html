@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<title>STELLAR SIEGE 2.5D — Space Shooter</title>
+<link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <div id="game-container">
+    
+    <!-- Top Half: The Game World & HUD -->
+    <div id="game-view">
+      <canvas id="game-canvas"></canvas>
+      <div id="scanlines"></div>
+
+      <!-- Visual Screen Flash (for EMP Bombs) -->
+      <div id="screen-flash"></div>
+
+      <!-- ============ TOP HUD ============ -->
+      <div id="hud" class="hidden">
+        <div class="hud-left">
+          <div class="hud-title">STELLAR SIEGE</div>
+          <div class="hud-row">
+            <span class="hud-label">SECTOR</span>
+            <span id="level-value" class="hud-value">1</span>
+          </div>
+        </div>
+
+        <div class="hud-center">
+          <div id="health-bar-outer">
+            <div id="health-bar-inner"></div>
+            <span id="health-text">100</span>
+          </div>
+          <div class="resource-row">
+            <div class="bomb-tracker">
+              <span class="hud-label">EMP</span>
+              <span id="bomb-count">2</span>
+            </div>
+            <div id="active-powerups"></div>
+          </div>
+        </div>
+
+        <div class="hud-right">
+          <div class="hud-row">
+            <span class="hud-label">SCORE</span>
+            <span id="score-value" class="hud-value">0</span>
+          </div>
+          <div class="hud-row">
+            <span class="hud-label">BEST</span>
+            <span id="highscore-value" class="hud-value">0</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Utility Buttons -->
+      <button id="pause-btn" class="icon-btn hidden" aria-label="Pause">❚❚</button>
+      <button id="mute-btn" class="icon-btn hidden" aria-label="Mute sound">🔊</button>
+
+      <!-- Dynamic Overlay Texts -->
+      <div id="combo-display" class="hidden"></div>
+      <div id="level-toast" class="hidden"></div>
+      
+      <div id="boss-ui" class="hidden">
+        <div class="boss-name">DREADNOUGHT</div>
+        <div class="boss-bar-outer">
+          <div id="boss-bar-inner"></div>
+        </div>
+      </div>
+
+      <!-- ============ START SCREEN ============ -->
+      <div id="start-screen" class="overlay-screen cinematic-start">
+        
+        <div class="title-block">
+          <h1 class="game-logo">STELLAR<span>SIEGE</span></h1>
+          <p class="tagline">INTO THE GRID // SURVIVE THE SWARM</p>
+        </div>
+
+        <div class="action-block">
+          <div class="menu-highscore">
+            HIGH SCORE <span id="start-highscore">0</span>
+          </div>
+          <button id="start-btn" class="neon-btn primary pulse-btn">LAUNCH FIGHTER</button>
+        </div>
+
+        <!-- SEAMLESS YELLOW CONTROLS HINT -->
+        <div class="controls-hint expanded-hint">
+          <div class="hint-section">
+            <div class="hint-header">DESKTOP (KEYBOARD)</div>
+            <div class="hint-row"><strong>Move Left / Right:</strong> <span>A / D or ← / →</span></div>
+            <div class="hint-row"><strong>Fire Weapons:</strong> <span>Spacebar</span></div>
+            <div class="hint-row"><strong>Deploy EMP Bomb:</strong> <span>B</span></div>
+            <div class="hint-row"><strong>Pause Game:</strong> <span>P</span></div>
+          </div>
+          <div class="hint-section">
+            <div class="hint-header">MOBILE (TOUCH)</div>
+            <!-- Removed the sentence per your request -->
+            <div class="hint-row"><strong>Maneuver:</strong> <span>Use D-Pad (◀ ▶)</span></div>
+            <div class="hint-row"><strong>Fire Weapons:</strong> <span>Tap (A)</span></div>
+            <div class="hint-row"><strong>Deploy EMP Bomb:</strong> <span>Tap (B)</span></div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- ============ PAUSE SCREEN ============ -->
+      <div id="pause-screen" class="overlay-screen hidden">
+        <div class="holo-panel">
+          <div class="corner tl"></div><div class="corner tr"></div>
+          <div class="corner bl"></div><div class="corner br"></div>
+          
+          <h2 class="overlay-title">SYSTEM PAUSED</h2>
+          <button id="resume-btn" class="neon-btn primary">RESUME</button>
+          <button id="restart-btn-pause" class="neon-btn">RESTART</button>
+        </div>
+      </div>
+
+      <!-- ============ GAME OVER SCREEN ============ -->
+      <div id="gameover-screen" class="overlay-screen hidden">
+        <div class="holo-panel danger">
+          <div class="corner tl"></div><div class="corner tr"></div>
+          <div class="corner bl"></div><div class="corner br"></div>
+          
+          <h2 class="overlay-title glitch-text">HULL BREACHED</h2>
+          <div id="new-highscore-badge" class="hidden">★ NEW HIGH SCORE ★</div>
+          
+          <div class="final-stats">
+            <div class="final-stat">
+              <span class="final-label">FINAL SCORE</span>
+              <span id="final-score" class="final-value">0</span>
+            </div>
+            <div class="final-stat">
+              <span class="final-label">HIGH SCORE</span>
+              <span id="final-highscore" class="final-value">0</span>
+            </div>
+            <div class="final-stat">
+              <span class="final-label">SECTOR REACHED</span>
+              <span id="final-level" class="final-value">1</span>
+            </div>
+          </div>
+          
+          <button id="restart-btn" class="neon-btn danger-btn">REDEPLOY</button>
+        </div>
+      </div>
+    </div> <!-- /#game-view -->
+
+    <!-- ============ RETRO GAMEPAD (MOBILE ONLY) ============ -->
+    <div id="mobile-gamepad">
+      <!-- Left side: Left/Right D-Pad -->
+      <div class="d-pad">
+        <button class="d-btn left" id="btn-left">◀</button>
+        <button class="d-btn right" id="btn-right">▶</button>
+      </div>
+
+      <!-- Right side: Action Buttons -->
+      <div class="action-buttons">
+        <div class="btn-group">
+          <button class="a-btn bomb-btn" id="btn-bomb">B</button>
+          <span class="btn-label">EMP</span>
+        </div>
+        <div class="btn-group">
+          <button class="a-btn fire-btn" id="btn-fire">A</button>
+          <span class="btn-label">FIRE</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
